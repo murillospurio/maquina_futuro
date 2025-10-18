@@ -390,8 +390,8 @@ const verificarStatus = () => {
           statusMsg.innerText = "✅ Pagamento confirmado! Obrigado pela compra.";
           statusMsg.style.color = "#00ff7f";
         }
-        setTimeout(() => fecharOverlay(), 3000);
-      } else if (tentativas < 6) { // tenta por 30 segundos
+        setTimeout(() => fecharOverlay(), 15000);
+      } else if (tentativas < 6) { // tenta por 15 segundos
         tentativas++;
         setTimeout(verificarStatus, 5000);
       } else {
