@@ -353,25 +353,39 @@ function confirmarComForma(forma) {
   const pedido = { order_id: "PED-" + Date.now(), total: total, items: items, forma_pagamento: forma };
 
   fetch('https://futuro-b32e6f57c219.herokuapp.com/pedido', {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(pedido)
-  })
-  .then(resp=>{
-    if(resp.ok){
-      carrinho={};
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(pedido)
+})
+.then(async resp => {
+  if (resp.ok) {
+    const data = await resp.json();
+
+    if (forma === "pix" && data.qr_base64) {
+      // Exibe o QR Code na tela
+      overlayItens.innerHTML = `
+        <p>Escaneie o QR Code abaixo para pagar:</p>
+        <img src="data:image/png;base64,${data.qr_base64}" style="width:400px;height:400px;">
+        <p><b>Ou copie o código Pix:</b><br>${data.qr_code}</p>
+      `;
+    } else {
+      // Fluxo normal: débito ou crédito
+      alert(`✅ Pedido enviado (${forma.toUpperCase()})! Aperte o botão verde da máquina para continuar.`);
+      carrinho = {};
       atualizarCarrinho();
       salvarEstoque();
-      alert(`✅ Pedido enviado (${forma.toUpperCase()})! Aperte o botão verde da máquina para continuar.`);
-    } else {
-      cancelarPedido();
-      alert("❌ Erro ao enviar pedido! Estoque restaurado.");
+      fecharOverlay();
     }
-  })
-  .catch(err=>{
+
+  } else {
     cancelarPedido();
-    console.error("Erro no fetch:", err);
-  });
+    alert("❌ Erro ao enviar pedido! Estoque restaurado.");
+  }
+})
+.catch(err => {
+  cancelarPedido();
+  console.error("Erro no fetch:", err);
+});
 
   fecharOverlay();
   resetTimerLimpeza();
