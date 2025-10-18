@@ -368,16 +368,16 @@ function confirmarComForma(forma) {
         <img src="data:image/png;base64,${data.qr_base64}" style="width:400px;height:400px;">
         <p><b>Ou copie o código Pix:</b><br>${data.qr_code}</p>
       `;
+      document.getElementById('pagamentoOpcoes').style.display = 'none';
     } else {
       // Fluxo normal: débito ou crédito
       alert(`✅ Pedido enviado (${forma.toUpperCase()})! Aperte o botão verde da máquina para continuar.`);
+            fecharOverlay();
+    }
       carrinho = {};
       atualizarCarrinho();
       salvarEstoque();
-      fecharOverlay();
-    }
-
-  } else {
+    } else {
     cancelarPedido();
     alert("❌ Erro ao enviar pedido! Estoque restaurado.");
   }
