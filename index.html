@@ -376,16 +376,39 @@ function confirmarComForma(forma) {
       document.getElementById("pagamentoOpcoes").style.display = "none";
 
       // 🔁 Simulação de verificação do pagamento
-      setTimeout(() => {
+      // 🔁 Verificação real do pagamento PIX
+const paymentId = data.payment_id;
+let tentativas = 0;
+
+const verificarStatus = () => {
+  fetch(`https://futuro-b32e6f57c219.herokuapp.com/verificar_pagamento/${paymentId}`)
+    .then(r => r.json())
+    .then(resp => {
+      if (resp.status === "approved") {
         const statusMsg = document.getElementById("aguardandoPagamento");
         if (statusMsg) {
           statusMsg.innerText = "✅ Pagamento confirmado! Obrigado pela compra.";
           statusMsg.style.color = "#00ff7f";
         }
-        setTimeout(() => {
-          fecharOverlay();
-        }, 3000);
-      }, 8000);
+        setTimeout(() => fecharOverlay(), 3000);
+      } else if (tentativas < 6) { // tenta por 30 segundos
+        tentativas++;
+        setTimeout(verificarStatus, 5000);
+      } else {
+        const statusMsg = document.getElementById("aguardandoPagamento");
+        if (statusMsg) {
+          statusMsg.innerText = "⏱️ Tempo expirado. Nenhum pagamento detectado.";
+          statusMsg.style.color = "orange";
+        }
+        setTimeout(() => fecharOverlay(), 4000);
+      }
+    })
+    .catch(err => console.error("Erro ao verificar status PIX:", err));
+};
+
+// começa a verificação
+verificarStatus();
+
 
       return; // encerra aqui se for PIX
     }
