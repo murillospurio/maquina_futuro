@@ -414,13 +414,50 @@ verificarStatus();
     }
 
     // === DÉBITO / CRÉDITO ===
-    if (data.status === "created") {
-      alert(`✅ Pedido enviado (${forma.toUpperCase()})! Aperte o botão verde da máquina para continuar.`);
-      fecharOverlay();
-    } else {
-      cancelarPedido();
-      alert("❌ Erro ao enviar pedido! Estoque restaurado.");
-    }
+   if (data.status === "created") {
+  // Mostra tela intuitiva com imagem e mensagem
+  overlayItens.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+      <h2 style="color:#fff; font-size:42px; margin-bottom:10px;">
+        Aperte o botão verde da maquininha para continuar o pagamento
+      </h2>
+      <img src="botao_verde.png" alt="Botão verde" 
+           style="width:300px;height:auto;margin:30px 0;border-radius:15px;box-shadow:0 0 25px rgba(255,255,255,0.4);">
+      <p id="statusPagamento" style="color:#0f0;font-size:32px;">⏳ Aguardando pagamento...</p>
+    </div>
+  `;
+  document.getElementById("pagamentoOpcoes").style.display = "none";
+
+  // Verificação do pagamento por 20 segundos
+  let tentativas = 0;
+  const paymentId = data.payment_id;
+
+  const verificarPagamento = () => {
+    fetch(`https://futuro-b32e6f57c219.herokuapp.com/verificar_pagamento/${paymentId}`)
+      .then(resp => resp.json())
+      .then(info => {
+        if (info.status === "approved") {
+          document.getElementById("statusPagamento").innerText =
+            "✅ Pagamento confirmado! Produto sendo liberado... Obrigado pela compra.";
+          document.getElementById("statusPagamento").style.color = "#00ff7f";
+
+          setTimeout(() => fecharOverlay(), 4000);
+        } else if (tentativas < 4) {
+          tentativas++;
+          setTimeout(verificarPagamento, 5000);
+        } else {
+          document.getElementById("statusPagamento").innerText =
+            "⚠️ Pagamento não detectado. Tente novamente.";
+          document.getElementById("statusPagamento").style.color = "orange";
+          setTimeout(() => fecharOverlay(), 4000);
+        }
+      })
+      .catch(err => console.error("Erro ao verificar pagamento:", err));
+  };
+
+  verificarPagamento();
+  return;
+}
 
     carrinho = {};
     atualizarCarrinho();
