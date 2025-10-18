@@ -441,7 +441,7 @@ verificarStatus();
             "✅ Pagamento confirmado! Produto sendo liberado... Obrigado pela compra.";
           document.getElementById("statusPagamento").style.color = "#00ff7f";
 
-          setTimeout(() => fecharOverlay(), 4000);
+          setTimeout(() => fecharOverlay(), 15000);
         } else if (tentativas < 4) {
           tentativas++;
           setTimeout(verificarPagamento, 5000);
