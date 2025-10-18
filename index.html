@@ -339,56 +339,50 @@ function fecharOverlay(){
 }
 
 function confirmarComForma(forma) {
-  // Monta o pedido
-  const pedido = {
-    id: "PED-" + Date.now(),
-    itens: Object.keys(carrinho).map(id => ({
-      id: id,
-      nome: produtos[id].nome,
-      quantidade: carrinho[id],
-      preco: produtos[id].preco
-    })),
-    total: calcularTotal(),
-    forma: forma
-  };
+  const items = [];
+  let total = 0;
+  for (let id in carrinho) {
+    const qtd = carrinho[id];
+    if (qtd > 0) {
+      const p = produtos.find(prod => prod.id == id);
+      items.push({ id: p.id, name: p.nome.toLowerCase().replace(/\s/g, "_"), qty: qtd });
+      total += p.preco * qtd;
+    }
+  }
 
-  console.log("🔹 Enviando pedido:", pedido);
+  const pedido = { order_id: "PED-" + Date.now(), total: total, items: items, forma_pagamento: forma };
 
   fetch("https://futuro-b32e6f57c219.herokuapp.com/pedido", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(pedido)
   })
-  .then(async resp => {
-    console.log("🔹 Status HTTP:", resp.status);
-
-    if (!resp.ok) {
-      cancelarPedido();
-      alert("❌ Erro ao enviar pedido! Estoque restaurado.");
-      return;
-    }
-
-    const data = await resp.json();
-    console.log("🟢 Resposta do servidor:", data);
+  .then(resp => resp.json())
+  .then(data => {
+    console.log("🟢 Resposta:", data);
 
     // === PIX ===
     if (forma === "pix" && data.qr_base64) {
       overlayItens.innerHTML = `
         <h2 style="color:white;">Pagamento via PIX</h2>
-        <p>Escaneie o QR Code abaixo para pagar:</p>
+        <p>Escaneie o QR Code abaixo:</p>
         <img src="data:image/png;base64,${data.qr_base64}"
              style="width:350px;height:350px;display:block;margin:auto;">
         <p style="color:white;">Ou copie o código Pix:</p>
         <textarea readonly style="width:90%;height:80px;">${data.qr_code}</textarea>
-        <p><a href="${data.ticket_url}" target="_blank"
-              style="color:yellow;">Abrir no app do banco</a></p>
+        <p><a href="${data.ticket_url}" target="_blank" style="color:yellow;">Abrir no app do banco</a></p>
       `;
       document.getElementById("pagamentoOpcoes").style.display = "none";
+      return;
     }
-    // === CARTÃO ===
-    else {
+
+    // === DÉBITO / CRÉDITO ===
+    if (data.status === "created") {
       alert(`✅ Pedido enviado (${forma.toUpperCase()})! Aperte o botão verde da máquina para continuar.`);
       fecharOverlay();
+    } else {
+      cancelarPedido();
+      alert("❌ Erro ao enviar pedido! Estoque restaurado.");
     }
 
     carrinho = {};
@@ -400,7 +394,10 @@ function confirmarComForma(forma) {
     cancelarPedido();
     alert("Erro de conexão com o servidor!");
   });
+
+  resetTimerLimpeza();
 }
+
 
 function resetTimerLimpeza(){
   if(timerLimpeza) clearTimeout(timerLimpeza);
