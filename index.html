@@ -360,24 +360,28 @@ function confirmarComForma(forma) {
 .then(async resp => {
   if (resp.ok) {
     const data = await resp.json();
+    console.log("🟢 Resposta do servidor:", data);
 
     if (forma === "pix" && data.qr_base64) {
-      // Exibe o QR Code na tela
+      // Mostra o QR Code PIX na tela
       overlayItens.innerHTML = `
+        <h2 style="color:white;">Pagamento via PIX</h2>
         <p>Escaneie o QR Code abaixo para pagar:</p>
-        <img src="data:image/png;base64,${data.qr_base64}" style="width:400px;height:400px;">
-        <p><b>Ou copie o código Pix:</b><br>${data.qr_code}</p>
+        <img src="data:image/png;base64,${data.qr_base64}" style="width:350px;height:350px;display:block;margin:auto;">
+        <p style="color:white;">Ou copie o código Pix abaixo:</p>
+        <textarea readonly style="width:90%;height:100px;">${data.qr_code}</textarea>
+        <p><a href="${data.ticket_url}" target="_blank" style="color:yellow;">Abrir no app do banco</a></p>
       `;
       document.getElementById('pagamentoOpcoes').style.display = 'none';
     } else {
-      // Fluxo normal: débito ou crédito
       alert(`✅ Pedido enviado (${forma.toUpperCase()})! Aperte o botão verde da máquina para continuar.`);
-            fecharOverlay();
+      fecharOverlay();
     }
-      carrinho = {};
-      atualizarCarrinho();
-      salvarEstoque();
-    } else {
+
+    carrinho = {};
+    atualizarCarrinho();
+    salvarEstoque();
+  } else {
     cancelarPedido();
     alert("❌ Erro ao enviar pedido! Estoque restaurado.");
   }
@@ -386,6 +390,7 @@ function confirmarComForma(forma) {
   cancelarPedido();
   console.error("Erro no fetch:", err);
 });
+
 
   fecharOverlay();
   resetTimerLimpeza();
