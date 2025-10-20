@@ -18,7 +18,6 @@ h1 {
   text-shadow:1px 1px 5px rgba(0,0,0,0.7);
   margin-top:150px;
   margin-bottom: 200px;
-  text-align: center;
 }
 /* Produtos */
 #produtos {
@@ -150,52 +149,9 @@ h1 {
 #btnDebito { background-color: #007bff; }
 #btnCredito { background-color: #28a745; }
 #btnPix { background-color: #ffc107; color: #000; }
-/* === Tela de repouso com carrossel === */
-#telaRepouso {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: radial-gradient(circle at center, rgba(0,102,204,0.7), rgba(0,0,50,0.95));
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  z-index: 9999;
-  color: white;
-  pointer-events: none;
-}
-#telaRepouso.ativo { display: flex; pointer-events: all; }
-#carrosselEspera {
-  width: 90%;
-  height: 65%;
-  overflow: hidden;
-  position: relative;
-  border-radius: 20px;
-  box-shadow: 0 0 25px rgba(0,0,0,0.5);
-  margin-bottom: 40px;
-}
-#slidesEspera {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  transition: transform 1s ease-in-out;
-}
-#slidesEspera img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-#telaRepouso h1 {
-  font-size: 60px;
-  font-family: 'Arial Black', sans-serif;
-  text-shadow: 0 0 25px rgba(255,255,255,0.8);
-  background: linear-gradient(90deg, #a0ccdb, #9cb9e4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
 </style>
 </head>
+
 <body>
 <h1>Convêniencia Machine</h1>
 <div id="produtos"></div>
@@ -261,9 +217,7 @@ function mostrarProdutos() {
       </div>`;
     div.appendChild(prodDiv);
   });
-  destacarCentral();
 }
-
 function alterarQuantidade(id, delta) {
   const produto = produtos.find(p => p.id === id);
   if(!carrinho[id]) carrinho[id]=0;
@@ -279,7 +233,6 @@ function alterarQuantidade(id, delta) {
   salvarEstoque();
   resetTimerLimpeza();
 }
-
 function atualizarCarrinho() {
   const div=document.getElementById('itensCarrinho');
   div.innerHTML='';
@@ -295,7 +248,6 @@ function atualizarCarrinho() {
   if(vazio) div.innerHTML='Vazio';
   document.getElementById('total').innerText=total.toFixed(2);
 }
-
 function cancelarPedido(){
   for(let id in carrinho){
     const qtd = carrinho[id];
@@ -312,27 +264,10 @@ function cancelarPedido(){
   resetTimerLimpeza();
 }
 
-function destacarCentral() {
-  const produtosDivs=document.querySelectorAll('.produto');
-  const container=document.getElementById('produtos');
-  container.addEventListener('scroll',()=>{
-    const meio=container.scrollLeft+container.offsetWidth/2;
-    produtosDivs.forEach(p=>{
-      const pCentro=p.offsetLeft+p.offsetWidth/2;
-      if(Math.abs(meio-pCentro)<p.offsetWidth/2) p.classList.add('central');
-      else p.classList.remove('central');
-    });
-  });
-  produtosDivs[0].classList.add('central');
-}
-
 // === LIMPEZA AUTOMÁTICA POR INATIVIDADE ===
 function resetTimerLimpeza(){
   if(timerLimpeza) clearTimeout(timerLimpeza);
-  timerLimpeza=setTimeout(()=>{
-    cancelarPedido();
-    console.log("Carrinho limpo por inatividade");
-  },180000);
+  timerLimpeza=setTimeout(()=>{ cancelarPedido(); },180000);
 }
 
 // === INICIALIZAÇÃO ===
@@ -340,42 +275,91 @@ carregarEstoque();
 mostrarProdutos();
 </script>
 
-<!-- === TELA DE ESPERA AUTOMÁTICA COM CARROSSEL === -->
+<!-- === TELA DE ESPERA AUTOMÁTICA COM CARROSSEL CORRIGIDO === -->
 <div id="telaRepouso">
-  <div id="carrosselEspera"><div id="slidesEspera"></div></div>
+  <div id="carrosselEspera">
+    <img id="imagemCarrossel" src="" alt="Produto" />
+  </div>
   <h1>🛒 Clique na tela para comprar</h1>
 </div>
 
 <script>
-// monta o carrossel com base no array produtos
-const slidesEspera = document.getElementById('slidesEspera');
-produtos.forEach(p=>{
-  const img = document.createElement('img');
-  img.src = p.img;
-  img.alt = p.nome;
-  slidesEspera.appendChild(img);
-});
-let indexEspera=0;
-setInterval(()=>{
-  const total=slidesEspera.children.length;
-  indexEspera=(indexEspera+1)%total;
-  slidesEspera.style.transform=`translateX(-${indexEspera*100}%)`;
-},3000);
+const telaRepouso = document.getElementById("telaRepouso");
+const imagemCarrossel = document.getElementById("imagemCarrossel");
+let indiceAtual = 0;
 
-// controle da tela de repouso
-const telaRepouso=document.getElementById("telaRepouso");
+function trocarImagem() {
+  const p = produtos[indiceAtual];
+  imagemCarrossel.src = p.img;
+  imagemCarrossel.alt = p.nome;
+  indiceAtual = (indiceAtual + 1) % produtos.length;
+}
+trocarImagem();
+setInterval(trocarImagem, 3000);
+
 let timerInatividade;
-function mostrarTelaRepouso(){telaRepouso.classList.add("ativo");}
-function esconderTelaRepouso(){telaRepouso.classList.remove("ativo");reiniciarTimer();}
-function reiniciarTimer(){
+function mostrarTelaRepouso() { telaRepouso.classList.add("ativo"); }
+function esconderTelaRepouso() { telaRepouso.classList.remove("ativo"); reiniciarTimer(); }
+function reiniciarTimer() {
   clearTimeout(timerInatividade);
-  timerInatividade=setTimeout(mostrarTelaRepouso,3*60*1000);
+  timerInatividade = setTimeout(mostrarTelaRepouso, 3 * 60 * 1000);
 }
 ['click','mousemove','keypress','touchstart','scroll'].forEach(evt=>{
-  document.addEventListener(evt,esconderTelaRepouso);
+  document.addEventListener(evt, esconderTelaRepouso);
 });
-telaRepouso.addEventListener('click',()=>{esconderTelaRepouso();});
+telaRepouso.addEventListener('click', ()=>{ esconderTelaRepouso(); });
 mostrarTelaRepouso();
 </script>
+
+<style>
+#telaRepouso {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle at center, rgba(0,102,204,0.7), rgba(0,0,50,0.95));
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 9999;
+  color: white;
+  pointer-events: none;
+}
+#telaRepouso.ativo { display: flex; pointer-events: all; }
+#carrosselEspera {
+  width: 60%;
+  height: 60%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.5);
+  background: rgba(255,255,255,0.1);
+}
+#carrosselEspera img {
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  animation: fade 3s infinite ease-in-out;
+}
+@keyframes fade {
+  0% { opacity: 0; transform: scale(0.95); }
+  10% { opacity: 1; transform: scale(1.05); }
+  90% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.95); }
+}
+#telaRepouso h1 {
+  font-size: 60px;
+  margin-top: 40px;
+  font-family: 'Arial Black', sans-serif;
+  text-shadow: 0 0 25px rgba(255,255,255,0.8);
+  background: linear-gradient(90deg, #a0ccdb, #9cb9e4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+</style>
+
 </body>
 </html>
