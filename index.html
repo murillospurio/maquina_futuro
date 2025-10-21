@@ -523,7 +523,15 @@ moverCarrossel();
 const telaRepouso=document.getElementById("telaRepouso");
 let timerInatividade;
 function mostrarTelaRepouso(){telaRepouso.classList.add("ativo");}
-function esconderTelaRepouso(){telaRepouso.classList.remove("ativo");reiniciarTimer();}
+async function esconderTelaRepouso(){
+  telaRepouso.classList.remove("ativo");
+  reiniciarTimer();
+
+  // 🆕 Recarrega catálogo sempre que sair da tela de repouso
+  await carregarProdutos();
+  atualizarCarrinho();
+}
+
 function reiniciarTimer(){
   clearTimeout(timerInatividade);
   timerInatividade=setTimeout(mostrarTelaRepouso,3*60*1000);
