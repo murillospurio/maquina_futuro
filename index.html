@@ -29,6 +29,13 @@ h1 {
   justify-content:flex-start;
   scrollbar-width:none;
 }
+
+#produtos::before,
+#produtos::after {
+  content: "";
+  flex: 0 0 25%; /* define o espaço de borda */
+}
+
 #produtos::-webkit-scrollbar { display:none; }
 .produto {
   flex:0 0 450px;
