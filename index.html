@@ -59,20 +59,17 @@ h1 {
 }
 .produto button:hover { background-color:#0056b3; }
 .produto.central {
-  transform: scale(1.1);
+  transform: scale(1.12);
   opacity: 1;
   z-index: 10;
-  background: rgba(255, 255, 255, 1); /* fundo branco total */
-  box-shadow: 0 0 25px rgba(255, 255, 255, 0.9); /* leve brilho em volta */
-  transition: transform 0.3s, opacity 0.3s, box-shadow 0.3s;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
 }
-
 .produto:not(.central) {
   transform: scale(0.85);
   opacity: 0.6;
-  background: rgba(255, 255, 255, 0.6); /* fundo mais transparente */
+  background: rgba(255, 255, 255, 0.6);
   box-shadow: none;
-  z-index: 1;
 }
 
 /* Carrinho */
@@ -112,6 +109,7 @@ h1 {
   border-radius: 6px;
   margin: 10px;
 }
+
 /* Overlay */
 #overlay {
   position:fixed;
@@ -145,6 +143,7 @@ h1 {
   transition: background 0.3s;
 }
 #overlay button:hover { background-color:#0056b3; }
+
 /* Opções de pagamento */
 #pagamentoOpcoes {
   display: none;
@@ -165,7 +164,7 @@ h1 {
 #btnCredito { background-color: #28a745; }
 #btnPix { background-color: #ffc107; color: #000; }
 
-
+/* Tela de repouso */
 #telaRepouso {
   position: fixed;
   top: 0; left: 0;
@@ -182,7 +181,6 @@ h1 {
   pointer-events: none;
 }
 #telaRepouso.ativo { display: flex; pointer-events: all; }
-
 #carrosselEspera {
   width: 85%;
   height: 60%;
@@ -191,23 +189,20 @@ h1 {
   justify-content: center;
   align-items: center;
 }
-
 #slidesEspera {
   display: flex;
   gap: 60px;
   align-items: center;
   transition: transform 0.2s linear;
 }
-
 #slidesEspera img {
   height: 520px;
   width: auto;
   flex-shrink: 0;
   border-radius: 15px;
-  box-shadow: none; /* remove sombra */
-  background: transparent; /* remove fundo */
+  box-shadow: none;
+  background: transparent;
 }
-
 #telaRepouso h1 {
   font-size: 60px;
   margin-top: 40px;
@@ -243,7 +238,24 @@ h1 {
   <button onclick="fecharOverlay()">Cancelar</button>
 </div>
 
+<!-- Tela preta com mensagens -->
+<div id="telaStatus">
+  <div id="textoStatus">Enviando pedido...</div>
+  <img id="imgStatus" src="" style="display:none;">
+</div>
+
+<!-- Tela de repouso -->
+<div id="telaRepouso">
+  <div id="carrosselEspera"><div id="slidesEspera"></div></div>
+  <h1>🛒 Clique na tela para comprar</h1>
+</div>
+
 <script>
+/* ===== CONFIG ===== */
+const ID_MAQUINA = 'refrigerante'; // << troque para 'salgadinho' no outro catálogo
+const API_BASE = 'https://futuro-b32e6f57c219.herokuapp.com';
+
+/* ===== PRODUTOS ===== */
 const produtos = [
   {id:1, nome:"Brahma", preco:1.25, estoque:30, img:"produto_1.png"},
   {id:2, nome:"Skol", preco:1.00, estoque:30, img:"produto_2.png"},
@@ -258,17 +270,17 @@ const produtos = [
 let carrinho = {};
 let timerLimpeza = null;
 
-// === SALVAR E CARREGAR ESTOQUE ===
-function salvarEstoque() { localStorage.setItem("estoqueAtual", JSON.stringify(produtos)); }
+/* ===== ESTOQUE LOCAL ===== */
+function salvarEstoque() { localStorage.setItem("estoqueAtual_"+ID_MAQUINA, JSON.stringify(produtos)); }
 function carregarEstoque() {
-  const salvo = localStorage.getItem("estoqueAtual");
+  const salvo = localStorage.getItem("estoqueAtual_"+ID_MAQUINA);
   if (salvo) {
     const produtosSalvos = JSON.parse(salvo);
-    produtos.forEach((p, i) => { p.estoque = produtosSalvos[i].estoque; });
+    produtos.forEach((p, i) => { if (produtosSalvos[i]) p.estoque = produtosSalvos[i].estoque; });
   }
 }
 
-// === EXIBIÇÃO DOS PRODUTOS ===
+/* ===== UI PRODUTOS ===== */
 function mostrarProdutos() {
   const div = document.getElementById('produtos');
   div.innerHTML='';
@@ -286,21 +298,44 @@ function mostrarProdutos() {
     div.appendChild(prodDiv);
   });
 }
+
+/* ===== DESTACAR CENTRAL ===== */
+function destacarCentral() {
+  const container = document.getElementById('produtos');
+  function atualizarCentral() {
+    const cards = [...document.querySelectorAll('.produto')];
+    const meio = container.scrollLeft + container.offsetWidth / 2;
+    let central = null, menor = Infinity;
+    cards.forEach(p => {
+      const c = p.offsetLeft + p.offsetWidth/2;
+      const d = Math.abs(meio - c);
+      if (d < menor) { menor = d; central = p; }
+    });
+    cards.forEach(p => p.classList.remove('central'));
+    if (central) central.classList.add('central');
+  }
+  container.addEventListener('scroll', atualizarCentral);
+  atualizarCentral();
+}
+
+/* ===== QUANTIDADE / CARRINHO ===== */
 function alterarQuantidade(id, delta) {
   const produto = produtos.find(p => p.id === id);
-  if(!carrinho[id]) carrinho[id]=0;
+  if (!carrinho[id]) carrinho[id] = 0;
+
   let novaQtd = carrinho[id] + delta;
-  if(novaQtd < 0) novaQtd = 0;
-  if(novaQtd > produto.estoque) novaQtd = produto.estoque;
-  let diff = novaQtd - carrinho[id];
-  produto.estoque -= diff;
+  if (novaQtd < 0) novaQtd = 0;
+  if (novaQtd > produto.estoque) novaQtd = produto.estoque;
+
   carrinho[id] = novaQtd;
+
   document.getElementById(`qtd-${id}`).innerText = novaQtd;
-  document.getElementById(`estoque-${id}`).innerText = produto.estoque;
+  document.getElementById(`estoque-${id}`).innerText = produto.estoque - novaQtd;
+
   atualizarCarrinho();
-  salvarEstoque();
   resetTimerLimpeza();
 }
+
 function atualizarCarrinho() {
   const div=document.getElementById('itensCarrinho');
   div.innerHTML='';
@@ -316,44 +351,158 @@ function atualizarCarrinho() {
   if(vazio) div.innerHTML='Vazio';
   document.getElementById('total').innerText=total.toFixed(2);
 }
-function cancelarPedido(){
-  for(let id in carrinho){
-    const qtd = carrinho[id];
-    if(qtd>0){
-      const produto = produtos.find(p=>p.id==id);
-      produto.estoque += qtd;
-      document.getElementById(`estoque-${id}`).innerText = produto.estoque;
-    }
+
+function cancelarPedido() {
+  for (let id in carrinho) {
+    document.getElementById(`qtd-${id}`).innerText = "0";
+    const produto = produtos.find(p => p.id == id);
+    document.getElementById(`estoque-${id}`).innerText = produto.estoque;
   }
-  carrinho={};
-  mostrarProdutos();
+  carrinho = {};
   atualizarCarrinho();
-  salvarEstoque();
   resetTimerLimpeza();
 }
 
-// === LIMPEZA AUTOMÁTICA POR INATIVIDADE ===
+/* ===== OVERLAY (VER PEDIDO) ===== */
+const overlay = document.getElementById('overlay');
+const overlayItens = document.getElementById('overlayItens');
+
+document.getElementById('verPedidoBtn').addEventListener('click', ()=>{
+  overlayItens.innerHTML='';
+  let total=0; let vazio=true;
+  for(let id in carrinho){
+    const qtd = carrinho[id];
+    if(qtd>0){
+      vazio=false;
+      const p = produtos.find(x=>x.id==id);
+      total += p.preco*qtd;
+      overlayItens.innerHTML += `${p.nome} x ${qtd} = R$ ${(p.preco*qtd).toFixed(2)}<br>`;
+    }
+  }
+  if(vazio) overlayItens.innerHTML='Carrinho vazio!';
+  else overlayItens.innerHTML += `<br><b>Total: R$ ${total.toFixed(2)}</b>`;
+  document.getElementById('pagamentoOpcoes').style.display = 'flex';
+  overlay.classList.add('show');
+});
+
+function fecharOverlay(){
+  overlay.classList.remove('show');
+  document.getElementById('pagamentoOpcoes').style.display='none';
+}
+
+async function confirmarComForma(forma) {
+  const items = [];
+  let total = 0;
+  for (let id in carrinho) {
+    const qtd = carrinho[id];
+    if (qtd > 0) {
+      const p = produtos.find(prod => prod.id == id);
+      items.push({ id: p.id, name: p.nome.toLowerCase().replace(/\s/g, "_"), qty: qtd });
+      total += p.preco * qtd;
+    }
+  }
+
+  if (items.length === 0) {
+    alert('Carrinho vazio!');
+    return;
+  }
+
+  const payload = {
+    order_id: "PED-" + Date.now(),
+    total: Number(total.toFixed(2)),
+    items: items,
+    forma_pagamento: forma
+  };
+
+  const tela = document.getElementById("telaStatus");
+  const texto = document.getElementById("textoStatus");
+  const img = document.getElementById("imgStatus");
+
+  try {
+    // === Envia o pedido para o Flask ===
+    const resp = await fetch(`${API_BASE}/pedido/${ID_MAQUINA}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      cancelarPedido();
+      fecharOverlay();
+      alert("❌ Erro ao enviar pedido. Tente novamente.");
+      return;
+    }
+
+    // === Se for PIX e o backend devolveu QR Code ===
+    if (forma === "pix" && data.qr_base64) {
+      document.getElementById("overlayItens").innerHTML = `
+        <p>Escaneie o QR Code abaixo para pagar:</p>
+        <img src="data:image/png;base64,${data.qr_base64}" style="width:400px;height:400px;">
+      `;
+      document.getElementById("pagamentoOpcoes").style.display = "none";
+      return; // mantém o QR na tela até pagamento ser feito
+    }
+
+    // === Se for débito ou crédito ===
+    fecharOverlay();
+
+    // Mostra tela preta com maquininha
+    tela.style.display = "flex";
+    texto.innerText = "✅ Pedido enviado! Aperte o botão verde da maquininha para continuar.";
+    img.src = "maquininha.png";
+    img.style.display = "block";
+
+    // === Aguardar liberação real do ESP via Flask ===
+    aguardarEntrega(tela, texto, img);
+
+  } catch (e) {
+    console.error(e);
+    cancelarPedido();
+    fecharOverlay();
+    alert("❌ Falha de conexão. Verifique a internet.");
+  }
+}
+
+async function aguardarEntrega(tela,texto,img){
+  let tentativas=0;
+  const intervalo=setInterval(async()=>{
+    const r=await fetch(`${API_BASE}/status_pagamento/${ID_MAQUINA}`);
+    const data=await r.json();
+    if(data.status==="entregue"){
+      clearInterval(intervalo);
+      texto.innerText="✅ Obrigado, volte sempre!";
+      img.style.display="none";
+      setTimeout(()=>{
+        tela.style.display="none";
+        document.getElementById("telaRepouso").classList.add("ativo");
+      },5000);
+    }
+    tentativas++;
+    if(tentativas>90){ clearInterval(intervalo); } // timeout 3min
+  },2000);
+}
+
+/* ===== LIMPEZA POR INATIVIDADE ===== */
 function resetTimerLimpeza(){
   if(timerLimpeza) clearTimeout(timerLimpeza);
   timerLimpeza=setTimeout(()=>{ cancelarPedido(); },180000);
 }
 
-// === INICIALIZAÇÃO ===
+/* ===== INICIALIZAÇÃO ===== */
 carregarEstoque();
 mostrarProdutos();
+destacarCentral();
 </script>
 
-<!-- === Tela de espera automática com carrossel === -->
+<!-- Tela de espera com carrossel -->
 <div id="telaRepouso">
   <div id="carrosselEspera"><div id="slidesEspera"></div></div>
   <h1>🛒 Clique na tela para comprar</h1>
 </div>
 
 <script>
-// === CARROSSEL EM LOOP INFINITO ===
 const slidesEspera = document.getElementById('slidesEspera');
-
-// duplica os produtos para simular loop
 const listaLoop = [...produtos, ...produtos];
 listaLoop.forEach(p => {
   const img = document.createElement('img');
@@ -364,16 +513,13 @@ listaLoop.forEach(p => {
 
 let pos = 0;
 function moverCarrossel() {
-  pos -= 3.5; // velocidade do deslocamento
-  if (Math.abs(pos) >= slidesEspera.scrollWidth / 2) {
-    pos = 0; // reinicia de forma imperceptível
-  }
+  pos -= 3.5;
+  if (Math.abs(pos) >= slidesEspera.scrollWidth / 2) pos = 0;
   slidesEspera.style.transform = `translateX(${pos}px)`;
   requestAnimationFrame(moverCarrossel);
 }
 moverCarrossel();
 
-// controle da tela de repouso
 const telaRepouso=document.getElementById("telaRepouso");
 let timerInatividade;
 function mostrarTelaRepouso(){telaRepouso.classList.add("ativo");}
