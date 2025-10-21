@@ -58,8 +58,23 @@ h1 {
   font-size:32px;
 }
 .produto button:hover { background-color:#0056b3; }
-.produto.central { transform:scale(1.1); opacity:1; z-index:10; }
-.produto:not(.central) { transform:scale(0.85); opacity:0.6; z-index:1; }
+.produto.central {
+  transform: scale(1.1);
+  opacity: 1;
+  z-index: 10;
+  background: rgba(255, 255, 255, 1); /* fundo branco total */
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.9); /* leve brilho em volta */
+  transition: transform 0.3s, opacity 0.3s, box-shadow 0.3s;
+}
+
+.produto:not(.central) {
+  transform: scale(0.85);
+  opacity: 0.6;
+  background: rgba(255, 255, 255, 0.6); /* fundo mais transparente */
+  box-shadow: none;
+  z-index: 1;
+}
+
 /* Carrinho */
 .carrinho {
   position: fixed;
