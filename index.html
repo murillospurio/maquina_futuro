@@ -263,16 +263,21 @@ const ID_MAQUINA = 'refrigerante'; // << troque para 'salgadinho' no outro catá
 const API_BASE = 'https://futuro-b32e6f57c219.herokuapp.com';
 
 /* ===== PRODUTOS ===== */
-const produtos = [
-  {id:1, nome:"Brahma", preco:1.25, estoque:30, img:"produto_1.png"},
-  {id:2, nome:"Skol", preco:1.00, estoque:30, img:"produto_2.png"},
-  {id:3, nome:"Coca-Cola", preco:1.10, estoque:20, img:"produto_3.png"},
-  {id:4, nome:"Coca-Cola zero", preco:1.45, estoque:15, img:"produto_4.png"},
-  {id:5, nome:"Sprite", preco:1.15, estoque:16, img:"produto_5.png"},
-  {id:6, nome:"Energético", preco:1.80, estoque:18, img:"produto_6.png"},
-  {id:7, nome:"Água sem gás", preco:1.30, estoque:23, img:"produto_7.png"},
-  {id:8, nome:"Original", preco:1.75, estoque:14, img:"produto_8.png"}
-];
+let produtos = []; // começa vazio
+
+async function carregarProdutos() {
+  try {
+    const resp = await fetch(`${API_BASE}/catalogo/${ID_MAQUINA}`);
+    if (!resp.ok) throw new Error("Erro ao carregar catálogo");
+    produtos = await resp.json(); // carrega do backend
+    mostrarProdutos(); // desenha os cards
+    destacarCentral(); // reativa destaque
+  } catch (e) {
+    console.error("❌ Falha ao carregar produtos:", e);
+    alert("Erro ao carregar produtos. Verifique conexão com o servidor.");
+  }
+}
+
 
 let carrinho = {};
 let timerLimpeza = null;
@@ -497,9 +502,13 @@ function resetTimerLimpeza(){
 }
 
 /* ===== INICIALIZAÇÃO ===== */
-carregarEstoque();
-mostrarProdutos();
-destacarCentral();
+(async () => {
+  carregarEstoque();          // mantém o estoque local
+  await carregarProdutos();   // busca os produtos do backend
+  destacarCentral();          // mantém o efeito de destaque
+  await montarCarrossel();    // monta o carrossel da tela de espera com as imagens novas
+})();
+
 </script>
 
 <!-- Tela de espera com carrossel -->
@@ -509,14 +518,17 @@ destacarCentral();
 </div>
 
 <script>
-const slidesEspera = document.getElementById('slidesEspera');
-const listaLoop = [...produtos, ...produtos];
-listaLoop.forEach(p => {
-  const img = document.createElement('img');
-  img.src = p.img;
-  img.alt = p.nome;
-  slidesEspera.appendChild(img);
-});
+async function montarCarrossel() {
+  const slidesEspera = document.getElementById('slidesEspera');
+  slidesEspera.innerHTML = ''; // limpa anterior
+  const listaLoop = [...produtos, ...produtos];
+  listaLoop.forEach(p => {
+    const img = document.createElement('img');
+    img.src = p.img;
+    img.alt = p.nome;
+    slidesEspera.appendChild(img);
+  });
+}
 
 let pos = 0;
 function moverCarrossel() {
@@ -526,6 +538,7 @@ function moverCarrossel() {
   requestAnimationFrame(moverCarrossel);
 }
 moverCarrossel();
+
 
 const telaRepouso=document.getElementById("telaRepouso");
 let timerInatividade;
