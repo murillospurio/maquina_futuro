@@ -29,30 +29,39 @@ h1 {
   justify-content:flex-start;
   scrollbar-width:none;
 }
-
 #produtos::before,
 #produtos::after {
   content: "";
-  flex: 0 0 25%; /* define o espaço de borda */
+  flex: 0 0 25%;
 }
-
 #produtos::-webkit-scrollbar { display:none; }
+
 .produto {
-  flex:0 0 450px;
-  height:850px;
+  flex:0 0 480px;
+  height: 900px;
   scroll-snap-align:center;
-  border-radius:12px;
+  border-radius: 20px;
   background:rgba(255,255,255,0.9);
-  box-shadow:0 6px 10px rgba(0,0,0,0.3);
+  box-shadow:0 8px 20px rgba(0,0,0,0.3);
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:space-between;
   transition: transform 0.3s, opacity 0.3s;
-  padding:12px;
+  padding:25px 20px;
   box-sizing:border-box;
 }
-.produto img { width:auto; height:400px; object-fit:contain; }
+.produto img {
+  width: 90%;
+  height: 600px;
+  object-fit: contain;
+  border-radius: 15px;
+  margin-top: 20px;
+  transition: transform 0.3s ease;
+}
+.produto img:hover {
+  transform: scale(1.08);
+}
 .produto div { font-size:32px; }
 .produto button {
   padding:22px 28px;
@@ -65,12 +74,18 @@ h1 {
   font-size:32px;
 }
 .produto button:hover { background-color:#0056b3; }
+
 .produto.central {
-  transform: scale(1.12);
+  transform: scale(1.15);
   opacity: 1;
   z-index: 10;
   background: rgba(255, 255, 255, 1);
-  box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 30px rgba(255,255,255,0.9);
+}
+
+.produto.central img {
+  height: 700px;
+  transform: scale(1.05);
 }
 .produto:not(.central) {
   transform: scale(0.85);
@@ -85,7 +100,6 @@ h1 {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: auto;
   background: rgba(255,255,255,0.60);
   display: flex;
   flex-direction: column;
@@ -99,22 +113,14 @@ h1 {
   border-top-right-radius: 10px;
 }
 .carrinho img { width: 100px; height: 100px; margin: 0; }
-#itensCarrinho {
-  flex-grow: 1;
-  overflow-x: auto;
-  white-space: nowrap;
-  padding: 0 10px;
-  font-size: 26px;
-}
+#itensCarrinho { flex-grow: 1; overflow-x: auto; white-space: nowrap; padding: 0 10px; font-size: 26px; }
 .carrinho button {
-  display: flex;
   width: 100%;
-  flex-direction: column;
-  gap: 10px; 
   padding: 16px 22px;
   font-size: 30px;
   border-radius: 6px;
   margin: 10px;
+  border: none;
 }
 
 /* Overlay */
@@ -126,16 +132,15 @@ h1 {
   color:#fff;
   z-index:9999;
   text-align:center;
-  box-sizing:border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.5s;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.5s;
 }
-#overlay.show { opacity: 1; pointer-events: all; }
+#overlay.show { opacity:1; pointer-events:all; }
 #overlay h2 { margin-bottom:20px; font-size:35px; }
 #overlay div { margin-bottom:15px; font-size:35px; }
 #overlay button {
@@ -147,29 +152,35 @@ h1 {
   background-color:#007bff;
   border:none;
   color:#fff;
-  transition: background 0.3s;
 }
 #overlay button:hover { background-color:#0056b3; }
 
 /* Opções de pagamento */
-#pagamentoOpcoes {
+#pagamentoOpcoes { display:none; flex-direction:column; gap:15px; margin-top:20px; }
+#pagamentoOpcoes button { font-size:36px; padding:40px; border-radius:10px; border:none; cursor:pointer; color:white; font-weight:bold; }
+#btnDebito { background-color:#007bff; }
+#btnCredito { background-color:#28a745; }
+#btnPix { background-color:#ffc107; color:#000; }
+
+/* Tela de status (mensagens de pedido) */
+#telaStatus {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  color: white;
   display: none;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 10000;
 }
-#pagamentoOpcoes button {
-  font-size: 36px;
-  padding: 40px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  color: white;
-  font-weight: bold;
+#telaStatus img {
+  width: 350px;
+  height: auto;
+  margin-top: 30px;
 }
-#btnDebito { background-color: #007bff; }
-#btnCredito { background-color: #28a745; }
-#btnPix { background-color: #ffc107; color: #000; }
 
 /* Tela de repouso */
 #telaRepouso {
@@ -187,7 +198,7 @@ h1 {
   color: white;
   pointer-events: none;
 }
-#telaRepouso.ativo { display: flex; pointer-events: all; }
+#telaRepouso.ativo { display:flex; pointer-events:all; }
 #carrosselEspera {
   width: 85%;
   height: 60%;
@@ -205,10 +216,7 @@ h1 {
 #slidesEspera img {
   height: 520px;
   width: auto;
-  flex-shrink: 0;
   border-radius: 15px;
-  box-shadow: none;
-  background: transparent;
 }
 #telaRepouso h1 {
   font-size: 60px;
@@ -251,160 +259,212 @@ h1 {
   <img id="imgStatus" src="" style="display:none;">
 </div>
 
-<!-- Tela de repouso -->
+<!-- Tela de repouso com carrossel -->
 <div id="telaRepouso">
   <div id="carrosselEspera"><div id="slidesEspera"></div></div>
   <h1>🛒 Clique na tela para comprar</h1>
 </div>
 
 <script>
-/* ===== CONFIG ===== */
-const ID_MAQUINA = 'refrigerante'; // << troque para 'salgadinho' no outro catálogo
+const ID_MAQUINA = 'refrigerante';
 const API_BASE = 'https://futuro-b32e6f57c219.herokuapp.com';
-
-/* ===== PRODUTOS ===== */
-let produtos = []; // começa vazio
-
-async function carregarProdutos() {
-  try {
-    const resp = await fetch(`${API_BASE}/catalogo/${ID_MAQUINA}`);
-    if (!resp.ok) throw new Error("Erro ao carregar catálogo");
-    produtos = await resp.json(); // carrega do backend
-    mostrarProdutos(); // desenha os cards
-    destacarCentral(); // reativa destaque
-  } catch (e) {
-    console.error("❌ Falha ao carregar produtos:", e);
-    alert("Erro ao carregar produtos. Verifique conexão com o servidor.");
-  }
-}
-
-
+let produtos = [];
 let carrinho = {};
 let timerLimpeza = null;
 
-/* ===== ESTOQUE LOCAL ===== */
-function salvarEstoque() { localStorage.setItem("estoqueAtual_"+ID_MAQUINA, JSON.stringify(produtos)); }
-function carregarEstoque() {
-  const salvo = localStorage.getItem("estoqueAtual_"+ID_MAQUINA);
-  if (salvo) {
-    const produtosSalvos = JSON.parse(salvo);
-    produtos.forEach((p, i) => { if (produtosSalvos[i]) p.estoque = produtosSalvos[i].estoque; });
+/* === carregar produtos === */
+async function carregarProdutos() {
+  try {
+    const resp = await fetch(`${API_BASE}/catalogo/${ID_MAQUINA}`);
+    produtos = await resp.json();
+    carregarEstoqueLocal();
+    console.log("Resposta do servidor:", produtos);
+    mostrarProdutos();
+ } catch(e){
+    console.error("Erro ao carregar produtos:", e);
+    alert("Erro ao carregar produtos");
   }
 }
 
-/* ===== UI PRODUTOS ===== */
+/* === mostrar produtos === */
 function mostrarProdutos() {
   const div = document.getElementById('produtos');
-  div.innerHTML='';
-  produtos.forEach(p=>{
-    const prodDiv=document.createElement('div');
-    prodDiv.className='produto';
-    prodDiv.innerHTML=`
-      <img src="${p.img}" alt="${p.nome}">
-      <div><b>${p.nome}</b><br>R$ ${p.preco.toFixed(2)}<br>Estoque: <span id="estoque-${p.id}">${p.estoque}</span></div>
-      <div>
-        <button onclick="alterarQuantidade(${p.id}, -1)">-</button>
-        <span id="qtd-${p.id}">0</span>
-        <button onclick="alterarQuantidade(${p.id}, 1)">+</button>
-      </div>`;
-    div.appendChild(prodDiv);
+  div.innerHTML = '';
+  produtos.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'produto';
+
+    // Novo caminho compatível com Cloudinary
+  let imgPath = "";
+  if (p.img && p.img.startsWith("http")) {
+    imgPath = p.img; // já é link Cloudinary
+  } else if (p.img && p.img.includes("/")) {
+    imgPath = `${API_BASE}/static/uploads/${p.img}`;
+  } else if (p.img) {
+    imgPath = `${API_BASE}/static/uploads/${ID_MAQUINA}/${p.img}`;
+  }
+
+  el.innerHTML = `
+    <img src="${imgPath}" alt="${p.nome}" 
+         onerror="this.style.display='none'" 
+         style="width:220px;height:220px;object-fit:contain;border-radius:15px;">
+    <div><b>${p.nome}</b><br>R$ ${p.preco.toFixed(2)}<br>Estoque:
+    <span id="estoque-${p.id}">${p.estoque}</span></div>
+    <div>
+      <button onclick="alterarQuantidade(${p.id},-1)">-</button>
+      <span id="qtd-${p.id}">0</span>
+      <button onclick="alterarQuantidade(${p.id},1)">+</button>
+    </div>`;
+  div.appendChild(el);
+});
+}
+/* === EFEITO DE DESTAQUE NO PRODUTO CENTRAL === */
+const produtosDiv = document.getElementById('produtos');
+
+produtosDiv.addEventListener('scroll', () => {
+  const produtos = document.querySelectorAll('.produto');
+  let centro = produtosDiv.scrollLeft + produtosDiv.clientWidth / 2;
+
+  produtos.forEach(produto => {
+    const box = produto.getBoundingClientRect();
+    const produtoCentro = box.left + box.width / 2;
+    const distancia = Math.abs(produtoCentro - window.innerWidth / 2);
+
+    if (distancia < 250) {
+      produto.classList.add('central');
+    } else {
+      produto.classList.remove('central');
+    }
+  });
+});
+// força atualização do destaque inicial
+setTimeout(() => produtosDiv.dispatchEvent(new Event('scroll')), 300);
+
+
+/* === alterar quantidade === */
+function alterarQuantidade(id, delta) {
+  const produto = produtos.find(p => p.id === id);
+  if (!produto) return;
+
+  // inicializa o carrinho se ainda não existir o item
+  if (!carrinho[id]) carrinho[id] = 0;
+
+  // aplica a alteração de quantidade
+  carrinho[id] += delta;
+  if (carrinho[id] < 0) carrinho[id] = 0;
+  if (carrinho[id] > produto.estoque) carrinho[id] = produto.estoque;
+
+  // atualiza visualmente
+  document.getElementById(`qtd-${id}`).textContent = carrinho[id];
+  document.getElementById(`estoque-${id}`).textContent = produto.estoque - carrinho[id];
+
+  // atualiza a soma e o resumo do carrinho
+  atualizarCarrinho();
+  salvarEstoqueLocal();
+}
+
+/* === Salvar e carregar estoque local === */
+function salvarEstoqueLocal() {
+  localStorage.setItem("estoqueLocal", JSON.stringify(produtos.map(p => ({
+    id: p.id,
+    estoque: parseInt(document.getElementById(`estoque-${p.id}`).textContent)
+  }))));
+}
+
+function carregarEstoqueLocal() {
+  const salvo = localStorage.getItem("estoqueLocal");
+  if (!salvo) return;
+  const estoqueLocal = JSON.parse(salvo);
+  estoqueLocal.forEach(item => {
+    const p = produtos.find(prod => prod.id === item.id);
+    if (p) {
+      p.estoque = item.estoque;
+    }
   });
 }
 
-/* ===== DESTACAR CENTRAL ===== */
-function destacarCentral() {
-  const container = document.getElementById('produtos');
-  function atualizarCentral() {
-    const cards = [...document.querySelectorAll('.produto')];
-    const meio = container.scrollLeft + container.offsetWidth / 2;
-    let central = null, menor = Infinity;
-    cards.forEach(p => {
-      const c = p.offsetLeft + p.offsetWidth/2;
-      const d = Math.abs(meio - c);
-      if (d < menor) { menor = d; central = p; }
-    });
-    cards.forEach(p => p.classList.remove('central'));
-    if (central) central.classList.add('central');
-  }
-  container.addEventListener('scroll', atualizarCentral);
-  atualizarCentral();
-}
-
-/* ===== QUANTIDADE / CARRINHO ===== */
-function alterarQuantidade(id, delta) {
-  const produto = produtos.find(p => p.id === id);
-  if (!carrinho[id]) carrinho[id] = 0;
-
-  let novaQtd = carrinho[id] + delta;
-  if (novaQtd < 0) novaQtd = 0;
-  if (novaQtd > produto.estoque) novaQtd = produto.estoque;
-
-  carrinho[id] = novaQtd;
-
-  document.getElementById(`qtd-${id}`).innerText = novaQtd;
-  document.getElementById(`estoque-${id}`).innerText = produto.estoque - novaQtd;
-
-  atualizarCarrinho();
-  resetTimerLimpeza();
-}
-
+/* === atualizar carrinho === */
 function atualizarCarrinho() {
-  const div=document.getElementById('itensCarrinho');
-  div.innerHTML='';
-  let total=0; let vazio=true;
-  for(let id in carrinho){
-    if(carrinho[id]>0){
-      vazio=false;
-      const p=produtos.find(prod=>prod.id==id);
-      total+=p.preco*carrinho[id];
-      div.innerHTML += `${p.nome} x ${carrinho[id]} = R$ ${(p.preco*carrinho[id]).toFixed(2)}<br>`;
+  const divCarrinho = document.getElementById('itensCarrinho');
+  let total = 0;
+  let vazio = true;
+
+  divCarrinho.innerHTML = '';
+  for (let id in carrinho) {
+    const qtd = carrinho[id];
+    if (qtd > 0) {
+      vazio = false;
+      const p = produtos.find(prod => prod.id == id);
+      const subtotal = p.preco * qtd;
+      total += subtotal;
+      divCarrinho.innerHTML += `${p.nome} x ${qtd} = R$ ${subtotal.toFixed(2)}<br>`;
     }
   }
-  if(vazio) div.innerHTML='Vazio';
-  document.getElementById('total').innerText=total.toFixed(2);
+
+  if (vazio) divCarrinho.innerHTML = 'Vazio';
+  document.getElementById('total').textContent = total.toFixed(2);
 }
 
+/* === cancelar pedido === */
 function cancelarPedido() {
   for (let id in carrinho) {
-    document.getElementById(`qtd-${id}`).innerText = "0";
+    carrinho[id] = 0;
     const produto = produtos.find(p => p.id == id);
-    document.getElementById(`estoque-${id}`).innerText = produto.estoque;
-  }
-  carrinho = {};
-  atualizarCarrinho();
-  resetTimerLimpeza();
-}
-
-/* ===== OVERLAY (VER PEDIDO) ===== */
-const overlay = document.getElementById('overlay');
-const overlayItens = document.getElementById('overlayItens');
-
-document.getElementById('verPedidoBtn').addEventListener('click', ()=>{
-  overlayItens.innerHTML='';
-  let total=0; let vazio=true;
-  for(let id in carrinho){
-    const qtd = carrinho[id];
-    if(qtd>0){
-      vazio=false;
-      const p = produtos.find(x=>x.id==id);
-      total += p.preco*qtd;
-      overlayItens.innerHTML += `${p.nome} x ${qtd} = R$ ${(p.preco*qtd).toFixed(2)}<br>`;
+    if (produto) {
+      document.getElementById(`qtd-${id}`).textContent = "0";
+      document.getElementById(`estoque-${id}`).textContent = produto.estoque;
     }
   }
-  if(vazio) overlayItens.innerHTML='Carrinho vazio!';
-  else overlayItens.innerHTML += `<br><b>Total: R$ ${total.toFixed(2)}</b>`;
-  document.getElementById('pagamentoOpcoes').style.display = 'flex';
+  atualizarCarrinho();
+}
+
+/* === OVERLAY (VER PEDIDO) === */
+const overlay = document.getElementById('overlay');
+const overlayItens = document.getElementById('overlayItens');
+const pagamentoOpcoes = document.getElementById('pagamentoOpcoes');
+
+// Botão "Ver Pedido"
+document.getElementById('verPedidoBtn').addEventListener('click', ()=>{
+  overlayItens.innerHTML = '';
+  let total = 0;
+  let vazio = true;
+
+  // monta a lista de itens do carrinho
+  for (let id in carrinho) {
+    const qtd = carrinho[id];
+    if (qtd > 0) {
+      vazio = false;
+      const p = produtos.find(x => x.id == id);
+      const subtotal = p.preco * qtd;
+      total += subtotal;
+      overlayItens.innerHTML += `${p.nome} x ${qtd} = R$ ${subtotal.toFixed(2)}<br>`;
+    }
+  }
+
+  // se o carrinho estiver vazio
+  if (vazio) {
+    overlayItens.innerHTML = 'Carrinho vazio!';
+    pagamentoOpcoes.style.display = 'none';
+  } else {
+    overlayItens.innerHTML += `<br><b>Total: R$ ${total.toFixed(2)}</b>`;
+    pagamentoOpcoes.style.display = 'flex';
+  }
+
   overlay.classList.add('show');
 });
 
+// Botão "Cancelar" dentro do overlay
 function fecharOverlay(){
   overlay.classList.remove('show');
-  document.getElementById('pagamentoOpcoes').style.display='none';
+  pagamentoOpcoes.style.display = 'none';
 }
 
+/* === confirmar pedido === */
 async function confirmarComForma(forma) {
   const items = [];
   let total = 0;
+
+  // Monta os itens do carrinho
   for (let id in carrinho) {
     const qtd = carrinho[id];
     if (qtd > 0) {
@@ -419,6 +479,7 @@ async function confirmarComForma(forma) {
     return;
   }
 
+  // Cria o payload do pedido (compatível com seu Flask)
   const payload = {
     order_id: "PED-" + Date.now(),
     total: Number(total.toFixed(2)),
@@ -431,136 +492,130 @@ async function confirmarComForma(forma) {
   const img = document.getElementById("imgStatus");
 
   try {
-    // === Envia o pedido para o Flask ===
+    // Envia o pedido para o Flask
     const resp = await fetch(`${API_BASE}/pedido/${ID_MAQUINA}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+
     const data = await resp.json();
 
     if (!resp.ok) {
-      cancelarPedido();
-      fecharOverlay();
       alert("❌ Erro ao enviar pedido. Tente novamente.");
+      fecharOverlay();
       return;
     }
 
-    // === Se for PIX e o backend devolveu QR Code ===
+    // === Se for PIX ===
     if (forma === "pix" && data.qr_base64) {
-      document.getElementById("overlayItens").innerHTML = `
+      overlayItens.innerHTML = `
         <p>Escaneie o QR Code abaixo para pagar:</p>
-        <img src="data:image/png;base64,${data.qr_base64}" style="width:400px;height:400px;">
+        <img src="data:image/png;base64,${data.qr_base64}" 
+             style="width:400px;height:400px;">
+        <p><b>Ou copie o código Pix:</b><br>${data.qr_code}</p>
       `;
       document.getElementById("pagamentoOpcoes").style.display = "none";
-      return; // mantém o QR na tela até pagamento ser feito
+      overlay.classList.add('show');
+      return; // mantém QR na tela até o pagamento
     }
 
-    // === Se for débito ou crédito ===
+    // === Se for DÉBITO ou CRÉDITO ===
     fecharOverlay();
+    salvarEstoqueLocal();
 
-    // Mostra tela preta com maquininha
+    // 🔹 limpa carrinho antes de mostrar a tela
+carrinho = {};
+document.getElementById('itensCarrinho').innerHTML = 'Vazio';
+document.getElementById('total').textContent = '0.00';
+
     tela.style.display = "flex";
     texto.innerText = "✅ Pedido enviado! Aperte o botão verde da maquininha para continuar.";
     img.src = "maquininha.png";
     img.style.display = "block";
 
-    // === Aguardar liberação real do ESP via Flask ===
-    aguardarEntrega(tela, texto, img);
+    // Sai automaticamente após 15 segundos para o catálogo/tela de espera
+    setTimeout(() => {
+      tela.style.display = "none";
+       document.getElementById("produtos").style.display = "flex";
+  iniciarTimerInatividade(); // só depois de 1 min sem toque ele entra em repouso
+}, 15000);
 
   } catch (e) {
-    console.error(e);
-    cancelarPedido();
+    console.error("Erro ao enviar pedido:", e);
+    alert("❌ Falha de conexão. Abra o terminal clicando no botao verde e cancele a operação.");
     fecharOverlay();
-    alert("❌ Falha de conexão. Verifique a internet.");
   }
 }
 
-async function aguardarEntrega(tela,texto,img){
-  let tentativas=0;
-  const intervalo=setInterval(async()=>{
-    const r=await fetch(`${API_BASE}/status_pagamento/${ID_MAQUINA}`);
-    const data=await r.json();
-    if(data.status==="entregue"){
-      clearInterval(intervalo);
-      texto.innerText="✅ Obrigado, volte sempre!";
-      img.style.display="none";
-      setTimeout(()=>{
-        tela.style.display="none";
-        document.getElementById("telaRepouso").classList.add("ativo");
-      },5000);
-    }
-    tentativas++;
-    if(tentativas>90){ clearInterval(intervalo); } // timeout 3min
-  },2000);
+let slideIndex = 0;
+let timerCarrossel = null;
+let timerInatividade = null;
+
+async function entrarTelaRepouso() {
+  const tela = document.getElementById("telaRepouso");
+  const slides = document.getElementById("slidesEspera");
+  const produtosDiv = document.getElementById("produtos");
+
+  tela.classList.add("ativo");
+  tela.style.display = "flex";
+  produtosDiv.style.display = "none";
+  slides.innerHTML = "";
+
+  try {
+    const resp = await fetch(`${API_BASE}/catalogo/${ID_MAQUINA}`);
+    const produtos = await resp.json();
+
+    // 🔹 Cria imagens duplicadas para efeito infinito
+    const lista = [...produtos, ...produtos];
+    lista.forEach(p => {
+      const img = document.createElement("img");
+      img.src = p.img && p.img.startsWith("http")
+        ? p.img
+        : `${API_BASE}/static/uploads/${ID_MAQUINA}/${p.img}`;
+      img.alt = p.nome;
+      img.onerror = () => (img.style.display = "none");
+      slides.appendChild(img);
+    });
+
+    // 🔹 Inicia a animação suave
+    slides.style.animation = "rolarContinuo 40s linear infinite";
+  } catch (err) {
+    console.error("Erro ao carregar carrossel:", err);
+  }
 }
 
-/* ===== LIMPEZA POR INATIVIDADE ===== */
-function resetTimerLimpeza(){
-  if(timerLimpeza) clearTimeout(timerLimpeza);
-  timerLimpeza=setTimeout(()=>{ cancelarPedido(); },180000);
+function moverCarrossel(qtd) {
+  const slides = document.getElementById("slidesEspera");
+  if (!slides.children.length) return;
+  slideIndex = (slideIndex + 1) % qtd;
+  slides.style.transition = "transform 1.5s ease";
+  slides.style.transform = `translateX(-${slideIndex * 100}%)`;
 }
 
-/* ===== INICIALIZAÇÃO ===== */
-(async () => {
-  carregarEstoque();          // mantém o estoque local
-  await carregarProdutos();   // busca os produtos do backend
-  destacarCentral();          // mantém o efeito de destaque
-  await montarCarrossel();    // monta o carrossel da tela de espera com as imagens novas
-})();
-
-</script>
-
-<!-- Tela de espera com carrossel -->
-<div id="telaRepouso">
-  <div id="carrosselEspera"><div id="slidesEspera"></div></div>
-  <h1>🛒 Clique na tela para comprar</h1>
-</div>
-
-<script>
-async function montarCarrossel() {
-  const slidesEspera = document.getElementById('slidesEspera');
-  slidesEspera.innerHTML = ''; // limpa anterior
-  const listaLoop = [...produtos, ...produtos];
-  listaLoop.forEach(p => {
-    const img = document.createElement('img');
-    img.src = p.img;
-    img.alt = p.nome;
-    slidesEspera.appendChild(img);
-  });
+function sairTelaRepouso() {
+  const tela = document.getElementById("telaRepouso");
+  const produtosDiv = document.getElementById("produtos");
+  tela.classList.remove("ativo");
+  tela.style.display = "none";
+  produtosDiv.style.display = "flex";
+  clearInterval(timerCarrossel);
+  carregarProdutos();
+  iniciarTimerInatividade();
 }
 
-let pos = 0;
-function moverCarrossel() {
-  pos -= 3.5;
-  if (Math.abs(pos) >= slidesEspera.scrollWidth / 2) pos = 0;
-  slidesEspera.style.transform = `translateX(${pos}px)`;
-  requestAnimationFrame(moverCarrossel);
-}
-moverCarrossel();
-
-
-const telaRepouso=document.getElementById("telaRepouso");
-let timerInatividade;
-function mostrarTelaRepouso(){telaRepouso.classList.add("ativo");}
-async function esconderTelaRepouso(){
-  telaRepouso.classList.remove("ativo");
-  reiniciarTimer();
-
-  // 🆕 Recarrega catálogo sempre que sair da tela de repouso
-  await carregarProdutos();
-  atualizarCarrinho();
-}
-
-function reiniciarTimer(){
+function iniciarTimerInatividade() {
   clearTimeout(timerInatividade);
-  timerInatividade=setTimeout(mostrarTelaRepouso,3*60*1000);
+  timerInatividade = setTimeout(entrarTelaRepouso, 60000); // volta pra tela após 1min
 }
-['click','mousemove','keypress','touchstart','scroll'].forEach(evt=>{
-  document.addEventListener(evt,esconderTelaRepouso);
+
+window.addEventListener("DOMContentLoaded", () => {
+  const tela = document.getElementById("telaRepouso");
+  tela.addEventListener("click", sairTelaRepouso);
+  entrarTelaRepouso(); // inicia em modo repouso
+  iniciarTimerInatividade(); // só entra em repouso após 1 minuto sem interação
 });
-telaRepouso.addEventListener('click',()=>{esconderTelaRepouso();});
-mostrarTelaRepouso();
+
 </script>
 </body>
 </html>
