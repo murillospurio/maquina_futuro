@@ -227,6 +227,16 @@ h1 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+@keyframes rolarContinuo {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* vai rolando suavemente */
+}
+
+#slidesEspera {
+  display: flex;
+  animation: rolarContinuo 40s linear infinite;
+}
+
 </style>
 </head>
 
@@ -277,7 +287,6 @@ async function carregarProdutos() {
   try {
     const resp = await fetch(`${API_BASE}/catalogo/${ID_MAQUINA}`);
     produtos = await resp.json();
-    carregarEstoqueLocal();
     console.log("Resposta do servidor:", produtos);
     mostrarProdutos();
  } catch(e){
@@ -290,55 +299,62 @@ async function carregarProdutos() {
 function mostrarProdutos() {
   const div = document.getElementById('produtos');
   div.innerHTML = '';
+
   produtos.forEach(p => {
     const el = document.createElement('div');
     el.className = 'produto';
 
-    // Novo caminho compatível com Cloudinary
-  let imgPath = "";
-  if (p.img && p.img.startsWith("http")) {
-    imgPath = p.img; // já é link Cloudinary
-  } else if (p.img && p.img.includes("/")) {
-    imgPath = `${API_BASE}/static/uploads/${p.img}`;
-  } else if (p.img) {
-    imgPath = `${API_BASE}/static/uploads/${ID_MAQUINA}/${p.img}`;
-  }
+    // ✅ Caminho correto da imagem (Cloudinary / uploads)
+    let imgPath = "";
+    if (p.img && p.img.startsWith("http")) {
+      imgPath = p.img;
+    } else if (p.img && p.img.includes("/")) {
+      imgPath = `${API_BASE}/static/uploads/${p.img}`;
+    } else if (p.img) {
+      imgPath = `${API_BASE}/static/uploads/${ID_MAQUINA}/${p.img}`;
+    }
 
-  el.innerHTML = `
-    <img src="${imgPath}" alt="${p.nome}" 
-         onerror="this.style.display='none'" 
-         style="width:220px;height:220px;object-fit:contain;border-radius:15px;">
-    <div><b>${p.nome}</b><br>R$ ${p.preco.toFixed(2)}<br>Estoque:
-    <span id="estoque-${p.id}">${p.estoque}</span></div>
-    <div>
-      <button onclick="alterarQuantidade(${p.id},-1)">-</button>
-      <span id="qtd-${p.id}">0</span>
-      <button onclick="alterarQuantidade(${p.id},1)">+</button>
-    </div>`;
-  div.appendChild(el);
-});
+    el.innerHTML = `
+      <img src="${imgPath}" alt="${p.nome}" 
+           onerror="this.style.display='none'" 
+           style="width:220px;height:220px;object-fit:contain;border-radius:15px;">
+      <div><b>${p.nome}</b><br>R$ ${p.preco.toFixed(2)}<br>Estoque:
+      <span id="estoque-${p.id}">${p.estoque}</span></div>
+      <div>
+        <button onclick="alterarQuantidade(${p.id},-1)">-</button>
+        <span id="qtd-${p.id}">0</span>
+        <button onclick="alterarQuantidade(${p.id},1)">+</button>
+      </div>`;
+    div.appendChild(el);
+  });
+
+  // ✅ Garante que o primeiro produto fique centralizado e destacado ao abrir
+  setTimeout(() => {
+    produtosDiv.scrollLeft = 0;
+    destacarCentral();
+  }, 300);
 }
-/* === EFEITO DE DESTAQUE NO PRODUTO CENTRAL === */
+
+/* === Função de destaque central === */
+function destacarCentral() {
+  const cards = document.querySelectorAll(".produto");
+  const centro = window.innerWidth / 2;
+
+  cards.forEach(card => {
+    const box = card.getBoundingClientRect();
+    const distancia = Math.abs((box.left + box.width / 2) - centro);
+
+    if (distancia < 250) card.classList.add("central");
+    else card.classList.remove("central");
+  });
+}
+
+/* === Evento de destaque ao rolar === */
 const produtosDiv = document.getElementById('produtos');
 
 produtosDiv.addEventListener('scroll', () => {
-  const produtos = document.querySelectorAll('.produto');
-  let centro = produtosDiv.scrollLeft + produtosDiv.clientWidth / 2;
-
-  produtos.forEach(produto => {
-    const box = produto.getBoundingClientRect();
-    const produtoCentro = box.left + box.width / 2;
-    const distancia = Math.abs(produtoCentro - window.innerWidth / 2);
-
-    if (distancia < 250) {
-      produto.classList.add('central');
-    } else {
-      produto.classList.remove('central');
-    }
-  });
+  destacarCentral();
 });
-// força atualização do destaque inicial
-setTimeout(() => produtosDiv.dispatchEvent(new Event('scroll')), 300);
 
 
 /* === alterar quantidade === */
@@ -360,27 +376,6 @@ function alterarQuantidade(id, delta) {
 
   // atualiza a soma e o resumo do carrinho
   atualizarCarrinho();
-  salvarEstoqueLocal();
-}
-
-/* === Salvar e carregar estoque local === */
-function salvarEstoqueLocal() {
-  localStorage.setItem("estoqueLocal", JSON.stringify(produtos.map(p => ({
-    id: p.id,
-    estoque: parseInt(document.getElementById(`estoque-${p.id}`).textContent)
-  }))));
-}
-
-function carregarEstoqueLocal() {
-  const salvo = localStorage.getItem("estoqueLocal");
-  if (!salvo) return;
-  const estoqueLocal = JSON.parse(salvo);
-  estoqueLocal.forEach(item => {
-    const p = produtos.find(prod => prod.id === item.id);
-    if (p) {
-      p.estoque = item.estoque;
-    }
-  });
 }
 
 /* === atualizar carrinho === */
@@ -469,7 +464,11 @@ async function confirmarComForma(forma) {
     const qtd = carrinho[id];
     if (qtd > 0) {
       const p = produtos.find(prod => prod.id == id);
-      items.push({ id: p.id, name: p.nome.toLowerCase().replace(/\s/g, "_"), qty: qtd });
+      items.push({
+  id: p.id,
+  name: p.nome.toLowerCase().replace(/\s/g, "_"),
+  qty: carrinho[id]
+});
       total += p.preco * qtd;
     }
   }
@@ -481,11 +480,13 @@ async function confirmarComForma(forma) {
 
   // Cria o payload do pedido (compatível com seu Flask)
   const payload = {
-    order_id: "PED-" + Date.now(),
-    total: Number(total.toFixed(2)),
-    items: items,
-    forma_pagamento: forma
-  };
+  order_id: "PED-" + Date.now(),
+  total: Number(total.toFixed(2)),
+  items: items,
+  forma_pagamento: forma
+};
+
+
 
   const tela = document.getElementById("telaStatus");
   const texto = document.getElementById("textoStatus");
@@ -516,16 +517,27 @@ async function confirmarComForma(forma) {
         <p><b>Ou copie o código Pix:</b><br>${data.qr_code}</p>
       `;
       document.getElementById("pagamentoOpcoes").style.display = "none";
-      overlay.classList.add('show');
-      return; // mantém QR na tela até o pagamento
-    }
+  overlay.classList.add('show');
+
+  // ✅ Timer de 1 minuto (60.000 ms) para fechar sozinho
+  setTimeout(() => {
+    overlay.classList.remove('show');
+    cancelarPedido(); // limpa carrinho
+    iniciarTimerInatividade(); // volta para repouso depois de inativo
+  }, 60000);
+
+  return; // mantém QR na tela até 1 min ou pagamento
+}
 
     // === Se for DÉBITO ou CRÉDITO ===
     fecharOverlay();
-    salvarEstoqueLocal();
 
     // 🔹 limpa carrinho antes de mostrar a tela
 carrinho = {};
+produtos.forEach(p => {
+  document.getElementById(`qtd-${p.id}`).textContent = "0";
+  document.getElementById(`estoque-${p.id}`).textContent = p.estoque;
+});
 document.getElementById('itensCarrinho').innerHTML = 'Vazio';
 document.getElementById('total').textContent = '0.00';
 
@@ -601,12 +613,19 @@ function sairTelaRepouso() {
   produtosDiv.style.display = "flex";
   clearInterval(timerCarrossel);
   carregarProdutos();
+
+  setTimeout(() => {
+    produtosDiv.scrollLeft = 0;
+    destacarCentral();
+  }, 400);
+
   iniciarTimerInatividade();
 }
 
+
 function iniciarTimerInatividade() {
   clearTimeout(timerInatividade);
-  timerInatividade = setTimeout(entrarTelaRepouso, 60000); // volta pra tela após 1min
+  timerInatividade = setTimeout(entrarTelaRepouso, 120000); // volta pra tela após 2min
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -614,6 +633,7 @@ window.addEventListener("DOMContentLoaded", () => {
   tela.addEventListener("click", sairTelaRepouso);
   entrarTelaRepouso(); // inicia em modo repouso
   iniciarTimerInatividade(); // só entra em repouso após 1 minuto sem interação
+  carregarProdutos();
 });
 
 </script>
