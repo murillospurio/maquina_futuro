@@ -2,15 +2,20 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Convêniencia Machine</title>
 <style>
 body {
   font-family: Arial;
-  margin:0; padding:0;
-  background: url('fundo.png') no-repeat center center fixed;
-  background-size: cover;
+  margin: 0;
+  padding: 0;
+  background: url('fundo.png') no-repeat center center;
+  background-size: cover;        /* garante que a imagem preencha */
+  background-attachment: fixed;  /* fixa igual em todas telas */
+  background-position: center;   /* sempre centralizada */
+  background-repeat: no-repeat;  /* evita repetir */
   overflow-x: hidden;
-  font-size: 40px; 
+  font-size: 40px;
 }
 h1 {
   text-align:center;
@@ -37,8 +42,9 @@ h1 {
 #produtos::-webkit-scrollbar { display:none; }
 
 .produto {
-  flex:0 0 480px;
-  height: 900px;
+  flex:0 0 80vw;
+  height: auto;
+  min-height: 75vh;
   scroll-snap-align:center;
   border-radius: 20px;
   background:rgba(255,255,255,0.9);
@@ -53,7 +59,7 @@ h1 {
 }
 .produto img {
   width: 90%;
-  height: 600px;
+  max-height: 70vh;
   object-fit: contain;
   border-radius: 15px;
   margin-top: 20px;
@@ -235,6 +241,11 @@ h1 {
 #slidesEspera {
   display: flex;
   animation: rolarContinuo 40s linear infinite;
+}
+@media screen and (max-aspect-ratio: 9/18) {
+  body {
+    background-size: 100% 100%;
+  }
 }
 
 </style>
