@@ -40,7 +40,6 @@ h1 {
 .produto {
   flex:0 0 270px;
   height: 480px;
-  scroll-snap-align:center;
   border-radius: 20px;
   background:rgba(255,255,255,0.9);
   box-shadow:0 8px 20px rgba(0,0,0,0.3);
@@ -360,11 +359,15 @@ function mostrarProdutos() {
     div.appendChild(el);
   });
 
-  // ✅ Garante que o primeiro produto fique centralizado e destacado ao abrir
   setTimeout(() => {
-    produtosDiv.scrollLeft = 0;
+    const primeiro = document.querySelector('.produto');
+    if (primeiro) {
+      const container = produtosDiv;
+      const pos = primeiro.offsetLeft - (container.offsetWidth / 2) + (primeiro.offsetWidth / 2);
+      container.scrollLeft = pos;
+    }
     destacarCentral();
-  }, 300);
+  }, 400);
 }
 
 function destacarCentral() {
@@ -599,10 +602,25 @@ let slideIndex = 0;
 let timerCarrossel = null;
 let timerInatividade = null;
 
+const produtosDiv = document.getElementById('produtos');
+
+let aguardando = false;
+produtosDiv.addEventListener('scroll', () => {
+  if (aguardando) return;
+  aguardando = true;
+  requestAnimationFrame(() => {
+    destacarCentral();
+    aguardando = false;
+  });
+});
+
+window.addEventListener('resize', destacarCentral);
+setTimeout(destacarCentral, 400);
+
+
 async function entrarTelaRepouso() {
   const tela = document.getElementById("telaRepouso");
   const slides = document.getElementById("slidesEspera");
-  const produtosDiv = document.getElementById("produtos");
 
   tela.classList.add("ativo");
   tela.style.display = "flex";
