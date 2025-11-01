@@ -372,21 +372,23 @@ function destacarCentral() {
   const cards = document.querySelectorAll(".produto");
   const centro = window.innerWidth / 2;
 
+  let cardMaisProximo = null;
+  let menorDistancia = Infinity;
+
   cards.forEach(card => {
     const box = card.getBoundingClientRect();
     const distancia = Math.abs((box.left + box.width / 2) - centro);
 
-    if (distancia < 250) card.classList.add("central");
-    else card.classList.remove("central");
+    if (distancia < menorDistancia) {
+      menorDistancia = distancia;
+      cardMaisProximo = card;
+    }
   });
+
+  // Marca somente o cartão mais próximo
+  cards.forEach(card => card.classList.remove("central"));
+  if (cardMaisProximo) cardMaisProximo.classList.add("central");
 }
-
-/* === Evento de destaque ao rolar === */
-const produtosDiv = document.getElementById('produtos');
-
-produtosDiv.addEventListener('scroll', () => {
-  destacarCentral();
-});
 
 
 /* === alterar quantidade === */
