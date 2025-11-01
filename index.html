@@ -85,7 +85,7 @@ h1 {
 }
 
 .produto.central img {
-  height: 700px;
+  height: 320px;
   transform: scale(1.05);
 }
 .produto:not(.central) {
@@ -103,7 +103,7 @@ h1 {
   width: 100%;
   background: rgba(255,255,255,0.60);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   padding: 10px 15px 20px 15px;
@@ -113,15 +113,40 @@ h1 {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
+/* LADO ESQUERDO */
+.carrinho-esquerda {
+  display: flex;
+  flex-direction: column;
+  flex: 1;                  /* ocupa a maior parte */
+}
+
+.carrinho-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .carrinho img { width: 40px; height: 40px; margin: 0; }
 #itensCarrinho { flex-grow: 1; overflow-x: auto; white-space: nowrap; padding: 0 10px; font-size: 22px; }
-.carrinho button {
-  width: 100%;
-  padding: 14px;
-  font-size: 26px;
-  border-radius: 6px;
-  margin: 10px;
+.totalCarrinho {
+  margin-top: 6px;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+/* LADO DIREITO */
+.carrinho-direita {
+  display: flex;
+  flex-direction: column;  /* Botões um abaixo do outro */
+  gap: 14px;
+  margin-left: 20px;
+}
+
+.carrinho-direita button {
+  padding: 18px 32px;
+  font-size: 28px;
+  border-radius: 12px;
   border: none;
+  cursor: pointer;
 }
 
 /* Overlay */
@@ -246,12 +271,17 @@ h1 {
 <div id="produtos"></div>
 
 <div class="carrinho">
-  <img src="carrinho_novo.png" alt="Carrinho">
-  <div id="itensCarrinho">Vazio</div>
-  <div>Total: R$ <span id="total">0.00</span></div>
-  <button id="verPedidoBtn">Ver Pedido</button>
-  <button onclick="cancelarPedido()">Cancelar Pedido</button>
-</div>
+  <div class="carrinho-esquerda">
+    <div class="carrinho-topo">
+  <div id="itensCarrinho"></div>
+    </div>
+    <div class="totalCarrinho">Total: R$ <span id="total">0.00</span></div>
+  </div>
+
+  <div class="carrinho-direita">
+    <button id="btnVerPedido">Ver Pedido</button>
+    <button id="btnCancelar">Cancelar Pedido</button>
+  </div>
 
 <div id="overlay">
   <h2>Seu Pedido</h2>
